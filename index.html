@@ -1,0 +1,43 @@
+import sqlite3
+from datetime import datetime
+
+# Crear o conectar a la base de datos
+conn = sqlite3.connect('residuos.db')
+cursor = conn.cursor()
+
+# Crear tabla de residuos
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS residuos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipo TEXT NOT NULL,
+        cantidad REAL NOT NULL,
+        origen TEXT NOT NULL,
+        destino TEXT NOT NULL,
+        fecha_registro TEXT NOT NULL
+    )
+''')
+conn.commit()
+
+def registrar_residuo(tipo, cantidad, origen, destino):
+    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute('''
+        INSERT INTO residuos (tipo, cantidad, origen, destino, fecha_registro)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (tipo, cantidad, origen, destino, fecha))
+    conn.commit()
+    print("Residuo registrado con éxito.")
+
+def generar_reporte():
+    cursor.execute('SELECT * FROM residuos')
+    residuos = cursor.fetchall()
+    print("\n--- REPORTE DE RESIDUOS ---")
+    for residuo in residuos:
+        print(f"ID: {residuo[0]}, Tipo: {residuo[1]}, Cantidad: {residuo[2]}, Origen: {residuo[3]}, Destino: {residuo[4]}, Fecha: {residuo[5]}")
+
+# Ejemplo de uso
+registrar_residuo("Plástico", 15.5, "Oficina A", "Planta de Reciclaje")
+registrar_residuo("Orgánico", 20.0, "Comedor", "Compostaje")
+generar_reporte()
+
+# Cerrar conexión
+conn.close()
